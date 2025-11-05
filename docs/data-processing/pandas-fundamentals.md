@@ -47,7 +47,21 @@ print(f"Shape: {imu_data.shape}")
 
 ### Data Loading and Inspection
 ```python
-# Load data from various sources
+# Load racing session data
+sessions = pd.read_csv('data/racing_sessions.csv')
+print(sessions.info())
+print(sessions.head())
+
+# Load lap time data
+laps = pd.read_csv('data/lap_times.csv')
+print(f"Total laps: {len(laps)}")
+print(f"Fastest lap: {laps['lap_time_s'].min():.3f}s")
+
+# Load detailed telemetry
+telemetry = pd.read_csv('data/telemetry_detailed.csv')
+print(f"Telemetry points: {len(telemetry)}")
+print(f"Speed range: {telemetry['speed_kmh'].min()}-{telemetry['speed_kmh'].max()} km/h")
+```
 df = pd.read_csv('sensor_data.csv')
 df_excel = pd.read_excel('measurements.xlsx', sheet_name='Sheet1')
 df_json = pd.read_json('telemetry.json')

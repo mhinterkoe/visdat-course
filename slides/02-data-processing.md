@@ -116,11 +116,11 @@ import pandas as pd
 import h5py
 
 # Save to HDF5 (compressed, fast access)
-df.to_hdf('racing_data.h5', key='telemetry', mode='w', 
+df.to_hdf('data/racing_data.h5', key='telemetry', mode='w', 
           complib='zlib', complevel=9)
 
 # Read specific time range (fast!)
-df_segment = pd.read_hdf('racing_data.h5', key='telemetry', where='timestamp >= 120 & timestamp <= 180')
+df_segment = pd.read_hdf('data/racing_data.h5', key='telemetry', where='time_s >= 30 & time_s <= 60')
 ```
 
 <style scoped>
@@ -147,7 +147,7 @@ df_segment = pd.read_hdf('racing_data.h5', key='telemetry', where='timestamp >= 
 ### Multi-Level Data Organization
 ```python
 # Hierarchical structure for race weekend
-with pd.HDFStore('race_weekend.h5') as store:
+with pd.HDFStore('data/racing_data.h5') as store:
     store['practice/session1'] = practice1_df
     store['practice/session2'] = practice2_df
     store['qualifying/q1'] = qualifying_df
@@ -155,7 +155,7 @@ with pd.HDFStore('race_weekend.h5') as store:
     store['race/stint2'] = race_stint2_df
 
 # Query specific sessions
-q1_data = pd.read_hdf('race_weekend.h5', 'qualifying/q1')
+q1_data = pd.read_hdf('data/racing_data.h5', 'sessions')
 ```
 
 ---
@@ -204,7 +204,7 @@ import pandas as pd
 import numpy as np
 
 # Load IMU data from CSV
-df = pd.read_csv('racing_imu_data.csv')
+df = pd.read_csv('data/telemetry_detailed.csv')
 
 # Quick data exploration
 print(f"Dataset shape: {df.shape}")
@@ -460,7 +460,7 @@ pre {
 # Multiple export formats for different use cases
 
 # 1. HDF5 for high-performance analysis
-with pd.HDFStore('racing_analysis.h5', complevel=9) as store:
+with pd.HDFStore('data/racing_data.h5', complevel=9) as store:
     store['raw_data'] = df_raw
     store['processed_data'] = df_clean
     store['cornering_segments'] = cornering_segments
@@ -476,7 +476,7 @@ with pd.HDFStore('racing_analysis.h5', complevel=9) as store:
     }
 
 # 2. CSV for external tools (MATLAB, Excel)
-df_clean.to_csv('racing_data_processed.csv', index=False)
+df_clean.to_csv('data/telemetry_processed.csv', index=False)
 
 # 3. JSON for web applications
 summary_stats.to_json('performance_api.json', orient='records')
@@ -496,7 +496,7 @@ pre {
 
 ```python
 # Professional data structure
-/racing_analysis.h5
+/data/racing_data.h5
 ├── /raw_data              # Original sensor readings
 ├── /processed_data        # Cleaned and calibrated
 ├── /derived_parameters    # Calculated values (g-forces, etc.)
@@ -518,7 +518,7 @@ pre {
 4. Extract performance metrics
 5. Prepare data for visualization
 
-**Dataset:** `code/data-processing/racing_corner_maneuver.csv`
+**Dataset:** `data/telemetry_detailed.csv`
 
 ---
 

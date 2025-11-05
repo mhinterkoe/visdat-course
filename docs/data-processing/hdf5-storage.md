@@ -91,7 +91,7 @@ racing_data['suspension_travel_fl'] = np.clip(racing_data['suspension_travel_fl'
 racing_data['suspension_travel_fr'] = np.clip(racing_data['suspension_travel_fr'], 0, 100)
 
 # Save to HDF5 with compression
-racing_data.to_hdf('nova_paka_autocross.h5', 
+racing_data.to_hdf('data/racing_data.h5', 
                   key='telemetry', 
                   mode='w',
                   complib='zlib',    # Compression algorithm
@@ -103,17 +103,17 @@ print(f"Saved {len(racing_data)} samples to HDF5")
 #### Reading Data from HDF5
 ```python
 # Read entire dataset
-df_loaded = pd.read_hdf('nova_paka_autocross.h5', 'telemetry')
+df_loaded = pd.read_hdf('data/racing_data.h5', 'telemetry')
 print(f"Loaded {len(df_loaded)} samples")
 
 # Read subset with conditions (very fast!)
-high_speed_data = pd.read_hdf('nova_paka_autocross.h5', 'telemetry',
-                             where='speed > 70')
+high_speed_data = pd.read_hdf('data/racing_data.h5', 'telemetry',
+                             where='speed_kmh > 40')
 print(f"Found {len(high_speed_data)} high-speed samples")
 
 # Read time range
-time_segment = pd.read_hdf('nova_paka_autocross.h5', 'telemetry',
-                          where='timestamp >= 30 & timestamp <= 60')
+time_segment = pd.read_hdf('data/racing_data.h5', 'telemetry',
+                          where='time_s >= 30 & time_s <= 60')
 print(f"30-60 second segment: {len(time_segment)} samples")
 ```
 
@@ -122,7 +122,7 @@ print(f"30-60 second segment: {len(time_segment)} samples")
 #### Race Weekend Structure
 ```python
 # Organize complete Nova Paka European Championship event data
-with pd.HDFStore('nova_paka_championship.h5', mode='w') as store:
+with pd.HDFStore('data/racing_data.h5', mode='w') as store:
     # Practice sessions on different days
     store['practice/friday_morning'] = friday_morning_practice
     store['practice/friday_afternoon'] = friday_afternoon_practice
@@ -158,14 +158,14 @@ print("Nova Paka European Championship event data structure created")
 #### Querying the Hierarchical Structure
 ```python
 # List all available datasets
-with pd.HDFStore('nova_paka_championship.h5', mode='r') as store:
+with pd.HDFStore('data/racing_data.h5', mode='r') as store:
     print("Available datasets:")
     for key in store.keys():
         print(f"  {key}: {store.get_storer(key).nrows} rows")
 
 # Load specific championship run data
-semifinal_data = pd.read_hdf('nova_paka_championship.h5', 'championship/semifinal_run1')
-high_speed_sections = pd.read_hdf('nova_paka_championship.h5', 'championship/semifinal_run1',
+semifinal_data = pd.read_hdf('data/racing_data.h5', 'sessions')
+high_speed_sections = pd.read_hdf('data/racing_data.h5', 'telemetry',
                               where='speed > 130')  # High-speed sections on clay-sand
 ```
 
@@ -174,7 +174,7 @@ high_speed_sections = pd.read_hdf('nova_paka_championship.h5', 'championship/sem
 #### Metadata and Attributes
 ```python
 # Add metadata to datasets
-with pd.HDFStore('nova_paka_analysis.h5', mode='w') as store:
+with pd.HDFStore('data/racing_data.h5', mode='w') as store:
     # Store the main telemetry data
     store['telemetry'] = racing_data
     
@@ -231,7 +231,7 @@ with pd.HDFStore('nova_paka_analysis.h5', mode='w') as store:
     }
 
 # Read metadata
-with pd.HDFStore('nova_paka_analysis.h5', mode='r') as store:
+with pd.HDFStore('data/racing_data.h5', mode='r') as store:
     metadata = store.get_storer('telemetry').attrs.metadata
     processing_info = store.get_storer('telemetry').attrs.processing
     
@@ -244,7 +244,7 @@ with pd.HDFStore('nova_paka_analysis.h5', mode='r') as store:
 #### Efficient Querying Strategies
 ```python
 # Complex queries with multiple conditions for clay-sand surface
-cornering_data = pd.read_hdf('nova_paka_autocross.h5', 'telemetry',
+cornering_data = pd.read_hdf('data/racing_data.h5', 'telemetry',
                             where=['abs(steering_angle) > 20',  # More steering on clay-sand
                                   'speed > 35',
                                   'timestamp >= 20'])
@@ -252,11 +252,11 @@ cornering_data = pd.read_hdf('nova_paka_autocross.h5', 'telemetry',
 # Time-based queries for 930m track
 run_start = 3.5   # seconds (after asphalt start section)
 run_end = 62.4    # seconds (typical completion time)
-run_data = pd.read_hdf('nova_paka_autocross.h5', 'telemetry',
+run_data = pd.read_hdf('data/racing_data.h5', 'telemetry',
                       where=f'timestamp >= {run_start} & timestamp <= {run_end}')
 
 # Surface-specific queries for clay-sand conditions
-high_grip_samples = pd.read_hdf('nova_paka_autocross.h5', 'telemetry',
+high_grip_samples = pd.read_hdf('data/racing_data.h5', 'telemetry',
                                where='abs(ay) > 1.5')  # High lateral g on good grip sections
 ```
 

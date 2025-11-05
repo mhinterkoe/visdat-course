@@ -607,7 +607,7 @@ output_data['cornering_intensity'] = pd.cut(
 
 # Save to multiple formats
 output_data.to_csv('racing_analysis_processed.csv', index=False)
-output_data.to_hdf('racing_analysis.h5', key='processed_data', mode='w', complib='zlib')
+output_data.to_hdf('data/racing_data.h5', key='processed_data', mode='w', complib='zlib')
 
 # Export performance summary
 performance_summary = pd.DataFrame([performance['overall']])
@@ -619,7 +619,7 @@ segments_df.to_csv('cornering_analysis.csv', index=False)
 
 print("Data export completed:")
 print(f"  - Processed data: racing_analysis_processed.csv ({len(output_data)} samples)")
-print(f"  - HDF5 archive: racing_analysis.h5")
+print(f"  - HDF5 archive: data/racing_data.h5")
 print(f"  - Performance summary: performance_summary.csv")
 print(f"  - Cornering analysis: cornering_analysis.csv ({len(segments_df)} segments)")
 ```

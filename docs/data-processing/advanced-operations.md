@@ -15,19 +15,18 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-# Load data with timestamp column
-df = pd.read_csv('telemetry_data.csv')
+# Load racing telemetry data
+df = pd.read_csv('data/telemetry_detailed.csv')
 
 # Convert timestamp to datetime
-df['datetime'] = pd.to_datetime(df['timestamp'], unit='s')
+df['datetime'] = pd.to_datetime(df['time_s'], unit='s')
 
 # Set datetime as index for time series operations
 df_ts = df.set_index('datetime')
 
-# Alternative: Create DatetimeIndex during loading
-df_ts = pd.read_csv('telemetry_data.csv', 
-                   index_col='timestamp', 
-                   parse_dates=True)
+# Alternative: Load telemetry with time index
+df_ts = pd.read_csv('data/telemetry_detailed.csv', 
+                   index_col='time_s')
 
 print(f"Time range: {df_ts.index.min()} to {df_ts.index.max()}")
 print(f"Frequency: {pd.infer_freq(df_ts.index)}")
