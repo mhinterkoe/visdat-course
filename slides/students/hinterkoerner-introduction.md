@@ -5,7 +5,7 @@ footer: "VIS3VO · Student Introduction · Markus Hinterkörner"
 ---
 
 # Student Introduction
-## [Your Full Name]
+## Markus Hinterkörner
 
 Master Mechanical Engineering · 3rd Semester  
 FH OÖ Wels
@@ -14,44 +14,45 @@ FH OÖ Wels
 
 ## About Me
 
-- **Background:** [Your educational/professional background]
-- **Experience:** [Relevant experience]
-- **Interests:** [Your interests related to the course]
+- **Background:** HTL Vöcklabruck, Konstrukteur im Anlagenbau, Bachelor in MB FH Wels
+- **Experience:** Auswertealgorithmus in Matlab programmiert (Bachelorarbeit)
+- **Interests:** Python Programming
 
 ---
 
 ## Technical Skills
 
 ### Programming
-- **Comfortable with:** [Languages/tools you know]
-- **Learning:** [What you're currently learning]
+- **Comfortable with:** Matlab
+- **Learning:** Python
 
 ### Engineering Tools
-- [List relevant engineering software/tools]
+-  Ansys Fluent
+- CREO Modeling/Parametric
+- Solid Works
+- Abaqus
 
----
+--- 
 
 ## Course Expectations
 
 ### What I want to learn:
-- [Expectation 1]
-- [Expectation 2]
-- [Expectation 3]
+1. Learn Programming in Python
+2. correct versioncontrol
+3. Visualizing Data
 
 ### Data I work with:
-- [Describe your data interests]
+- CFD data
+- Abaqus data
 
 ---
 
 ## Questions & Goals
 
 ### Questions:
-- [Question about course content]
-- [Question about tools/methods]
+- None
 
 ### Goals:
-- [Specific learning goal]
-- [Project aspiration]
+- See -> What i want to learn
 
 Thank you! 🚀
-```
