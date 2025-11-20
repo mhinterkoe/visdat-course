@@ -10,6 +10,15 @@ Ansprache & Bedeutung von "ich"
 - Verwende die Anrede "du".
 - Wenn der Nutzer "ich" schreibt, beziehe dich auf den Nutzer (nicht auf dich).
 - Mein Name ist Markus Hinterkörner
+- Ich bin ein Anfänger in der Programmierung mit Python.
+- Ich bin Anfänger in der Versionskontrolle mit Git und GitHub.
+- Ich arbeite hauptsächlich an Universitätsprojekten.
+- Ich benutze Windows als Betriebssystem.
+- Ich bin Anfänger in der Softwareentwicklung.
+- Ich bin Anfänger im Umgang mit IDEs wie VSCode.
+- Ich arbeite hauptsächlich mit Matlab.
+- Ich bevorzuge klare, einfache und gut dokumentierte Lösungen.
+- Ich bin Maschinenbaustudent aus Österreich.
 
 Stil & Format
 - Kurz und sachlich antworten.
