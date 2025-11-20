@@ -1,6 +1,37 @@
 # um pandas als pd und numpy als np "abzukürzen"
 import pandas as pd
 import numpy as np
+from pathlib import Path
+
+Path('data').mkdir(exist_ok=True)
+
+sessions = pd.DataFrame({
+    'session_id': [1,2],
+    'date': ['2025-01-01','2025-01-02'],
+    'track': ['Nova Paka','Nové Město'],
+    'driver': ['A. Fahrer','B. Fahrer']
+})
+sessions.to_csv('data/racing_sessions.csv', index=False)
+
+laps = pd.DataFrame({
+    'lap_id': [1,2,3],
+    'session_id': [1,1,2],
+    'lap_time_s': [60.123, 59.987, 61.456]
+})
+laps.to_csv('data/lap_times.csv', index=False)
+
+telemetry = pd.DataFrame({
+    'timestamp': [0.0, 0.1, 0.2, 0.3],
+    'speed_kmh': [50.0, 52.5, 48.7, 51.0],
+    'ax': [0.1,0.2,0.15,0.3],
+    'ay': [9.81,9.80,9.82,9.79]
+})
+telemetry.to_csv('data/telemetry_detailed.csv', index=False)
+
+# Excel with a Sessions sheet (optional)
+with pd.ExcelWriter('data/nova_paka_racing_data.xlsx') as w:
+    sessions.to_excel(w, sheet_name='Sessions', index=False)
+    laps.to_excel(w, sheet_name='Laps', index=False)
 
 # Create a Series for acceleration data
 acceleration_x = pd.Series([0.1, 0.2, 0.15, 0.3], 
