@@ -49,6 +49,7 @@ module.exports = {
         'data-processing/pandas-fundamentals',
         'data-processing/hdf5-storage',
         'data-processing/sample-datasets',
+        'data-processing/motion-tracking-assignment',
       ],
     },
     {
