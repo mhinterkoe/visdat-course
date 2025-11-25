@@ -1,3 +1,6 @@
+% Load Data
+load('data_2.mat')
+
 % Tabelle aus dem Timetable erzeugen
 accTable = timetable2table(Acceleration);
 
