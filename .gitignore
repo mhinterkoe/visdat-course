@@ -47,6 +47,10 @@ venv/
 **/*.venv*/
 **/.venv/
 
+# custom venv name
+myproject/
+**/myproject/
+
 # OS generated files
 .DS_Store
 .DS_Store?
