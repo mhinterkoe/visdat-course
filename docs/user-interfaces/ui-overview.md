@@ -387,9 +387,7 @@ This skill set is directly applicable to:
 
 Ready to build your first Qt application? Proceed to:
 
-- **[Getting Started with PyQt6](pyqt-basics)** - Installation and first application
-- **[Qt Layouts and Widgets](qt-layouts-widgets)** - Building interface components
-- **[Signals and Slots in Practice](signals-slots-practice)** - Connecting components
+- **[Getting Started with PyQt6](pyqt-basics)** - Installation, layouts, widgets, signals and slots
 - **[Integrating PyVista with Qt](pyvista-qt-integration)** - 3D visualization in Qt windows
 - **[Practical Workshop](qt-workshop)** - Build a complete FEM visualization tool
 
