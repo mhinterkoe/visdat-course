@@ -23,7 +23,7 @@ def read_frf_file(filepath):
 # 1. DATEN EINLESEN
 # -----------------------------
 
-base_path = Path("Project\data") # Pfad zu den Daten
+base_path = Path("final-assignment\markus-hinterkoerner\code\data") # Pfad zu den Daten
 hochhaeuser = ["Hochhaus 1", "Hochhaus 2", "Hochhaus 3"] # Liste der Hochhäuser
 knoten_liste = ["H11", "H12", "H13"] # Liste der Knoten
 
