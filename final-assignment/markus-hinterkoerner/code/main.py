@@ -276,7 +276,7 @@ for haus in hochhaeuser:  # Schleife über alle Hochhäuser
     plt.close() # Plot schließen
 
 # -----------------------------
-# 3D HOCHHAUS EINLESEN UND VON VORNE AUF DIE x-y EBENE ANSCHAUEN
+# 5. 3D HOCHHAUS EINLESEN UND AUSLENKUNG DER ERSTEN MODE (Hochhaus 1)
 # Hochrichtung = y, Breite = x, Auslenkung = z
 # -----------------------------
 
@@ -286,16 +286,45 @@ stl_file = base_path / "Hochhaus.stl"
 # Mesh laden
 mesh = pv.read(stl_file)
 
+# Wähle die Mode aus, die visualisiert werden soll (erste Mode)
+mode_idx = 0  
+mode_shape = mode_shapes[mode_idx]  # Array der Auslenkungen pro Knoten [H11, H12, H13]
+
+# Knotenhöhen definieren (y-Werte der Messpunkte/Hochhaus-Ebenen)
+# Annahme: Fundament = min y, H13 = max y
+y_min = mesh.points[:,1].min()
+y_max = mesh.points[:,1].max()
+knoten_hoehen = np.array([y_max, (y_min + y_max)/2, y_min])  # H11, H12, H13 entsprechend mode_shape
+
+# Displacement-Matrix erstellen (N Punkte x 3)
+displacement = np.zeros_like(mesh.points)  # alle Punkte initiiert mit 0
+
+# Vertices den Moden zuordnen (z-Richtung)
+tol = 0.05 * (y_max - y_min)  # Toleranz für y-Koordinate
+for j, h in enumerate(knoten_hoehen):
+    mask = np.abs(mesh.points[:,1] - h) < tol
+    displacement[mask, 2] = mode_shape[j]  # z-Richtung Auslenkung
+
+# Displacement-Feld als Punktattribut hinzufügen
+mesh["U"] = displacement  # displacement = N x 3 Array
+
+# Automatische Skalierung, damit Auslenkung sichtbar wird
+max_auslenkung = np.max(np.abs(mode_shape))
+hoehe_hh = y_max - y_min
+factor = hoehe_hh / max_auslenkung * 0.1  # 10% der Gebäudehöhe als sichtbare Auslenkung
+print(f"Angewendeter Warping-Faktor: {factor:.2f}")
+
+# Mesh nach Auslenkung warpen
+warped_mesh = mesh.warp_by_vector("U", factor=factor)
+
 # Plotter erstellen
 plotter = pv.Plotter()
-plotter.add_mesh(mesh, color="lightgray", show_edges=True, opacity=1.0)
-
-# Achsen hinzufügen
-plotter.add_axes()   # X, Y, Z Achsen
-plotter.show_grid()  # Raster anzeigen
+plotter.add_mesh(warped_mesh, color="lightblue", show_edges=True, opacity=1.0)
+plotter.add_axes()   
+plotter.show_grid()  
 
 # Kamera frontal auf x-y Ebene schauen
 # Blick entlang +z (z nach hinten), Hochrichtung y
 plotter.view_vector(vector=(0, 0, 1), viewup=(0, 1, 0))
 
-plotter.show(title="Hochhaus 3D Ansicht (Frontansicht x-y, y=Höhe, z=Auslenkung)")
+plotter.show(title=f"Hochhaus 1 – 3D Auslenkung Mode {mode_idx+1}")
