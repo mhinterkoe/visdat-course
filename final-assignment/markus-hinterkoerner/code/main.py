@@ -19,6 +19,20 @@ def read_frf_file(filepath):
     )
     return df # Einlesen Textdatei mit Frequenz und Werten
 
+# Funktion zum Einlesen der Zeit-Signal-Dateien
+def read_time_signal(filepath):
+    df = pd.read_csv(
+        filepath,
+        sep="\t",
+        decimal=",",
+        header=0
+    )
+
+    time = df.iloc[:, 0].values      # Zeit
+    amplitude = df.iloc[:, 1].values # Signal
+
+    return time, amplitude
+
 # -----------------------------
 # 1. DATEN EINLESEN
 # -----------------------------
@@ -84,6 +98,71 @@ for haus in hochhaeuser:
     plt.savefig(full_path, dpi=100) # Plot speichern mit hoher Auflösung (dpi=100)
     # plt.show() # Plot anzeigen
     plt.close() # Plot schließen
+
+# -----------------------------
+# 2b. ZEITBEREICHSSIGNALE PLOTTEN
+# -----------------------------
+
+hochhaeuser_time = ["Hochhaus 2"] # Zeitdaten nur für Hochhaus 2 vorhanden
+referenz_knoten = "H11"
+t_zoom_min = 0.37  # untere Grenze des Zooms in Sekunden
+t_zoom_max = 0.6  # obere Grenze des Zooms in Sekunden
+
+for haus in hochhaeuser_time:
+
+    acc_file = base_path / haus / f"{referenz_knoten}_beschleunigung.txt"
+    force_file = base_path / haus / f"{referenz_knoten}_kraft.txt"
+
+    # Zeitbereichsdaten einlesen
+    t_acc, acc = read_time_signal(acc_file)
+    t_force, force = read_time_signal(force_file)
+
+    # =============================
+    # Plot 1: Gesamte Zeitverläufe
+    # =============================
+    fig, axs = plt.subplots(2, 1, figsize=(16, 9), sharex=True)
+
+    # Kraft
+    axs[0].plot(t_force, force)
+    axs[0].set_ylabel("Kraft [N]")
+    axs[0].set_title(f"Zeitbereichssignale – {haus} ({referenz_knoten})")
+    axs[0].grid(True)
+
+    # Beschleunigung
+    axs[1].plot(t_acc, acc)
+    axs[1].set_xlabel("Zeit [s]")
+    axs[1].set_ylabel("Beschleunigung [m/s²]")
+    axs[1].grid(True)
+
+    full_path = plot_path / f"{haus}_{referenz_knoten}_Zeitbereich_gesamt.png"
+    plt.savefig(full_path, dpi=200)
+    #plt.show()
+    plt.close()
+
+    # =============================
+    # Plot 2: Gezoomter Zeitbereich
+    # =============================
+    mask_acc = (t_acc >= t_zoom_min) & (t_acc <= t_zoom_max)
+    mask_force = (t_force >= t_zoom_min) & (t_force <= t_zoom_max)
+
+    fig, axs = plt.subplots(2, 1, figsize=(16, 9), sharex=True)
+
+    # Kraft (Zoom)
+    axs[0].plot(t_force[mask_force], force[mask_force])
+    axs[0].set_ylabel("Kraft [N]")
+    axs[0].set_title(f"Zeitbereichssignale ({t_zoom_min}s–{t_zoom_max}s) – {haus} ({referenz_knoten})")
+    axs[0].grid(True)
+
+    # Beschleunigung (Zoom)
+    axs[1].plot(t_acc[mask_acc], acc[mask_acc])
+    axs[1].set_xlabel("Zeit [s]")
+    axs[1].set_ylabel("Beschleunigung [m/s²]")
+    axs[1].grid(True)
+
+    full_path = plot_path / f"{haus}_{referenz_knoten}_Zeitbereich_Zoom.png"
+    plt.savefig(full_path, dpi=200)
+    #plt.show()
+    plt.close()
 
 # -----------------------------
 # 3. EIGENFREQUENZEN BESTIMMEN UND AUSGEBEN
@@ -162,7 +241,9 @@ for haus in hochhaeuser:  # Schleife über alle Hochhäuser
         label='Ursprüngliche Form'
     )
 
-    for i, f_mode in enumerate(mode_freqs):  # Schleife über Moden
+    for i, f_mode in enumerate(mode_freqs): # Schleife über alle Moden
+        if f_mode is None or np.isnan(f_mode): # Überspringen, falls keine Frequenz gefunden
+         continue
 
         mode_shape = mode_shapes[i]  # Modeform (Reihenfolge: H11, H12, H13)
 
@@ -190,5 +271,5 @@ for haus in hochhaeuser:  # Schleife über alle Hochhäuser
 
     full_path = plot_path / f"{haus}_Modeformen.png"
     plt.savefig(full_path, dpi=300) # Plot speichern mit hoher Auflösung (dpi=300)
-    plt.show() # Plot anzeigen
+    #plt.show() # Plot anzeigen
     plt.close() # Plot schließen
