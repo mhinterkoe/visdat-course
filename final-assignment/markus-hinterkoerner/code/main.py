@@ -2,6 +2,7 @@ import sys # Für Systempfade
 from pathlib import Path # Für Pfadoperationen
 import pandas as pd # Für Datenmanipulation
 import numpy as np # Für numerische Operationen
+import pyvista as pv # Für 3D-Visualisierung
 import matplotlib.pyplot as plt # Für Plotten
 from scipy.signal import find_peaks # Für Peak-Erkennung
 
@@ -273,3 +274,28 @@ for haus in hochhaeuser:  # Schleife über alle Hochhäuser
     plt.savefig(full_path, dpi=300) # Plot speichern mit hoher Auflösung (dpi=300)
     #plt.show() # Plot anzeigen
     plt.close() # Plot schließen
+
+# -----------------------------
+# 3D HOCHHAUS EINLESEN UND VON VORNE AUF DIE x-y EBENE ANSCHAUEN
+# Hochrichtung = y, Breite = x, Auslenkung = z
+# -----------------------------
+
+# Pfad zur STL-Datei
+stl_file = base_path / "Hochhaus.stl"
+
+# Mesh laden
+mesh = pv.read(stl_file)
+
+# Plotter erstellen
+plotter = pv.Plotter()
+plotter.add_mesh(mesh, color="lightgray", show_edges=True, opacity=1.0)
+
+# Achsen hinzufügen
+plotter.add_axes()   # X, Y, Z Achsen
+plotter.show_grid()  # Raster anzeigen
+
+# Kamera frontal auf x-y Ebene schauen
+# Blick entlang +z (z nach hinten), Hochrichtung y
+plotter.view_vector(vector=(0, 0, 1), viewup=(0, 1, 0))
+
+plotter.show(title="Hochhaus 3D Ansicht (Frontansicht x-y, y=Höhe, z=Auslenkung)")
