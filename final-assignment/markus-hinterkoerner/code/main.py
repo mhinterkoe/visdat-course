@@ -5,6 +5,7 @@ import numpy as np # Für numerische Operationen
 import pyvista as pv # Für 3D-Visualisierung
 import matplotlib.pyplot as plt # Für Plotten
 from scipy.signal import find_peaks # Für Peak-Erkennung
+from scipy.interpolate import PchipInterpolator # Für Interpolation bei 3D-Darstellung der Modeformen
 
 # Import der eigenen Funktion zur Berechnung der Modeformen
 from modal_utils import compute_mode_shapes
@@ -276,55 +277,62 @@ for haus in hochhaeuser:  # Schleife über alle Hochhäuser
     plt.close() # Plot schließen
 
 # -----------------------------
-# 5. 3D HOCHHAUS EINLESEN UND AUSLENKUNG DER ERSTEN MODE (Hochhaus 1)
+# 5. 3D AUSLENKUNG ALLER MODEN FÜR JEDES HOCHHAUS DARSTELLEN
+# (MIT PYVISTA)
 # Hochrichtung = y, Breite = x, Auslenkung = z
 # -----------------------------
 
-# Pfad zur STL-Datei
-stl_file = base_path / "Hochhaus.stl"
-
-# Mesh laden
-mesh = pv.read(stl_file)
-
-# Wähle die Mode aus, die visualisiert werden soll (erste Mode)
-mode_idx = 0  
-mode_shape = mode_shapes[mode_idx]  # Array der Auslenkungen pro Knoten [H11, H12, H13]
+stl_file = base_path / "Hochhaus.stl"  # STL-Datei (gemeinsames Mesh für alle Hochhäuser)
+mesh_orig = pv.read(stl_file)           # Original-Mesh laden
 
 # Knotenhöhen definieren (y-Werte der Messpunkte/Hochhaus-Ebenen)
-# Annahme: Fundament = min y, H13 = max y
-y_min = mesh.points[:,1].min()
-y_max = mesh.points[:,1].max()
-knoten_hoehen = np.array([y_max, (y_min + y_max)/2, y_min])  # H11, H12, H13 entsprechend mode_shape
+y_min = mesh_orig.points[:,1].min()
+y_max = mesh_orig.points[:,1].max()
+knoten_hoehen = np.array([y_max, (y_min + y_max)/2, y_min])  # von unten Fundament, H13, H12, H11
 
-# Displacement-Matrix erstellen (N Punkte x 3)
-displacement = np.zeros_like(mesh.points)  # alle Punkte initiiert mit 0
+print("=== Warpingfaktoren für die 3D-Darstellung der Modeformen ===\n")
 
-# Vertices den Moden zuordnen (z-Richtung)
-tol = 0.05 * (y_max - y_min)  # Toleranz für y-Koordinate
-for j, h in enumerate(knoten_hoehen):
-    mask = np.abs(mesh.points[:,1] - h) < tol
-    displacement[mask, 2] = mode_shape[j]  # z-Richtung Auslenkung
+for haus in hochhaeuser: # Schleife über alle Hochhäuser
 
-# Displacement-Feld als Punktattribut hinzufügen
-mesh["U"] = displacement  # displacement = N x 3 Array
+    # Modeformen und deren Eigenfrequenzen bestimmen wieder mit der eigenen Funktion
+    mode_freqs, mode_shapes = compute_mode_shapes(
+        data,
+        haus,
+        knoten_liste,
+        mode_windows_all[haus],
+        referenz_knoten,
+        delta_f
+    )
 
-# Automatische Skalierung, damit Auslenkung sichtbar wird
-max_auslenkung = np.max(np.abs(mode_shape))
-hoehe_hh = y_max - y_min
-factor = hoehe_hh / max_auslenkung * 0.1  # 10% der Gebäudehöhe als sichtbare Auslenkung
-print(f"Angewendeter Warping-Faktor: {factor:.2f}")
+    for mode_idx, mode_shape in enumerate(mode_shapes): # Schleife über alle Moden
 
-# Mesh nach Auslenkung warpen
-warped_mesh = mesh.warp_by_vector("U", factor=factor)
+        mesh = mesh_orig.copy()
+        displacement = np.zeros_like(mesh.points)
 
-# Plotter erstellen
-plotter = pv.Plotter()
-plotter.add_mesh(warped_mesh, color="lightblue", show_edges=True, opacity=1.0)
-plotter.add_axes()   
-plotter.show_grid()  
+        # -----------------------------
+        # Glatte Interpolation zwischen den Knotenebenen
+        # -----------------------------
+        # PCHIP interpoliert die z-Auslenkung zwischen den y-Knoten
+        spline = PchipInterpolator(knoten_hoehen[::-1], mode_shape[::-1])  # [::-1] = umdrehen weil Fundament unten
 
-# Kamera frontal auf x-y Ebene schauen
-# Blick entlang +z (z nach hinten), Hochrichtung y
-plotter.view_vector(vector=(0, 0, 1), viewup=(0, 1, 0))
+        # Für alle Meshpunkte die z-Auslenkung berechnen
+        displacement[:,2] = spline(mesh.points[:,1]) # y-Koordinate des Meshs als Eingabe für die Interpolation
 
-plotter.show(title=f"Hochhaus 1 – 3D Auslenkung Mode {mode_idx+1}")
+        # Punktattribut für Warping hinzufügen
+        mesh["U"] = displacement # "U" ist das Standardattribut für Verschiebungen in PyVista
+
+        # Automatische Skalierung
+        max_auslenkung = np.max(np.abs(mode_shape)) # maximale Auslenkung der Modeform
+        hoehe_hh = y_max - y_min # Höhe des Hochhauses
+        factor = hoehe_hh / max_auslenkung * 0.1 # Skalierungsfaktor (10% der Gebäudehöhe)
+        print(f"{haus} – Mode {mode_idx+1}: Warping-Faktor = {factor:.2f}") # Ausgabe des Warping-Faktors
+
+        warped_mesh = mesh.warp_by_vector("U", factor=factor) # Mesh verformen
+
+        # Plot
+        plotter = pv.Plotter()
+        plotter.add_mesh(warped_mesh, color="lightblue", show_edges=True, opacity=1.0)
+        plotter.add_axes()
+        plotter.show_grid()
+        plotter.view_vector(vector=(-1, 0, 0), viewup=(0, 1, 0))
+        plotter.show(title=f"{haus} – 3D Auslenkung Mode {mode_idx+1}")
