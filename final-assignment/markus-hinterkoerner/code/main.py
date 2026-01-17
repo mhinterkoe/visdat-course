@@ -41,7 +41,7 @@ def read_time_signal(filepath):
 
 base_path = Path(r"final-assignment\markus-hinterkoerner\code\data") # Pfad zu den Daten (r für raw string wegen Backslashes)
 hochhaeuser = ["Hochhaus 1", "Hochhaus 2", "Hochhaus 3"] # Liste der Hochhäuser
-knoten_liste = ["H11", "H12", "H13"] # Liste der Knoten je Hochhaus
+knoten_liste = ["E1", "E2", "E3"] # Liste der Knoten je Hochhaus
 
 data = {} # dictionary zum Speichern der Daten
 T = 10  # Messdauer in Sekunden
@@ -106,7 +106,7 @@ for haus in hochhaeuser:
 # -----------------------------
 
 hochhaeuser_time = ["Hochhaus 2"] # Zeitdaten nur für Hochhaus 2 vorhanden
-referenz_knoten = "H11"
+referenz_knoten = "E1"
 t_zoom_min = 0.37  # untere Grenze des Zooms in Sekunden
 t_zoom_max = 0.6  # obere Grenze des Zooms in Sekunden
 
@@ -170,7 +170,7 @@ for haus in hochhaeuser_time:
 # 3. EIGENFREQUENZEN BESTIMMEN UND AUSGEBEN
 # -----------------------------
 
-referenz_knoten = "H11" # Referenzknoten für Peaks
+referenz_knoten = "E1" # Referenzknoten für Peaks
 
 print("=== Gefundene Eigenfrequenzen für alle Hochhäuser ===\n")
 
