@@ -1,299 +1,178 @@
-from pathlib import Path # Für Pfadoperationen
-import pandas as pd # Für Datenmanipulation
-import numpy as np # Für numerische Operationen
-import pyvista as pv # Für 3D-Visualisierung
-import matplotlib.pyplot as plt # Für Plotten
-from scipy.signal import find_peaks # Für Peak-Erkennung
-from scipy.interpolate import PchipInterpolator # Für Interpolation bei 3D-Darstellung der Modeformen
+from pathlib import Path  # Für Pfadoperationen
+import pandas as pd        # Für Datenmanipulation
+import numpy as np         # Für numerische Berechnungen
+import matplotlib.pyplot as plt  # Für 2D-Plots
+import pyvista as pv       # Für 3D-Visualisierung
+from scipy.signal import find_peaks          # Für Peak-Erkennung
+from scipy.interpolate import PchipInterpolator  # Für glatte Interpolation der Modeformen
 
-# Import der eigenen Funktion zur Berechnung der Modeformen
+# Eigene Funktion zur Berechnung der Modeformen
 from modal_utils import compute_mode_shapes
 
-# Funktion zum Einlesen der FRF-Dateien
+# =============================
+# 1. HILFSFUNKTIONEN
+# =============================
+
 def read_frf_file(filepath):
-    df = pd.read_csv(
-        filepath,
-        sep="\t", # Trenner ist Tabulator
-        decimal=",",
-        names=["f", "val"], # Frequenz, Wert
-        header=0
-    )
-    return df # Einlesen Textdatei mit Frequenz und Werten
+    """
+    Liest eine FRF-Datei ein (Re- oder Im-Teil)
+    Erwartet Tab-getrennte Werte, Dezimalzeichen = ","
+    """
+    df = pd.read_csv(filepath, sep="\t", decimal=",", names=["f", "val"], header=0)
+    return df
 
-# Funktion zum Einlesen der Zeit-Signal-Dateien
 def read_time_signal(filepath):
-    df = pd.read_csv(
-        filepath,
-        sep="\t",
-        decimal=",",
-        header=0
-    )
-
-    time = df.iloc[:, 0].values      # Zeit
-    amplitude = df.iloc[:, 1].values # Signal
-
+    """
+    Liest eine Zeitbereichs-Datei ein (z.B. Beschleunigung oder Kraft)
+    Erwartet zwei Spalten: Zeit, Amplitude
+    """
+    df = pd.read_csv(filepath, sep="\t", decimal=",", header=0)
+    time = df.iloc[:,0].values
+    amplitude = df.iloc[:,1].values
     return time, amplitude
 
-# -----------------------------
-# 1. DATEN EINLESEN
-# -----------------------------
+# =============================
+# 2. DATEN EINLESEN
+# =============================
+base_path = Path(__file__).parent / "data"  # Basisverzeichnis für Daten
+hochhaeuser = ["Hochhaus 1", "Hochhaus 2", "Hochhaus 3"]
+knoten_liste = ["E1", "E2", "E3"]  # Messpunkte im Hochhaus
 
-base_path = Path(__file__).parent / "data" # Pfad zum Daten-Ordner
-hochhaeuser = ["Hochhaus 1", "Hochhaus 2", "Hochhaus 3"] # Liste der Hochhäuser
-knoten_liste = ["E1", "E2", "E3"] # Liste der Knoten je Hochhaus
-
-data = {} # dictionary zum Speichern der Daten
-T = 10  # Messdauer in Sekunden
+data = {}  # Dictionary zum Speichern der Messdaten
+T = 10     # Messdauer in Sekunden
 delta_f = 1 / T  # Frequenzauflösung
 
-for haus in hochhaeuser: # Schleife über alle Hochhäuser
+# Schleife über alle Hochhäuser und Knoten
+for haus in hochhaeuser:
     data[haus] = {}
     for knoten in knoten_liste:
-        im_file = base_path / haus / f"{knoten}_Im.txt" # Pfad zur Imaginärdatei
-        re_file = base_path / haus / f"{knoten}_Re.txt" # Pfad zur Realdatei
+        # Pfade zu Real- und Imaginärteil
+        im_file = base_path / haus / f"{knoten}_Im.txt"
+        re_file = base_path / haus / f"{knoten}_Re.txt"
+        df_im = read_frf_file(im_file)
+        df_re = read_frf_file(re_file)
 
-        df_im = read_frf_file(im_file) # Daten des Imaginärteil einlesen
-        df_re = read_frf_file(re_file) # Daten desRealteil einlesen
+        # Physikalische Frequenzachse erstellen
+        N = len(df_im)
+        f_phys = np.arange(N) * delta_f
 
-        # physikalische Frequenzachse erstellen
-        N = len(df_im) # Anzahl der Messpunkte
-        f_phys = np.arange(N) * delta_f  # jeder Messpunkt bekommt eigene Frequenz
-        # [0, 1*delta_f, 2*delta_f, ..., (N-1)*delta_f]
-
+        # Daten abspeichern
         data[haus][knoten] = {
-            "f": f_phys,    # physikalische Frequenzen in Hz
+            "f": f_phys,
             "Im": df_im["val"].values,
             "Re": df_re["val"].values
-        } # Daten speichern
+        }
 
-# -----------------------------
-# 2. DATEN PLOTTEN (Imaginärteil)
-# -----------------------------
+# =============================
+# 3. 2D-PLOT: Imaginärteil
+# =============================
+plot_path = Path(__file__).parent / "Plots"
+plot_path.mkdir(exist_ok=True)  # Ordner erstellen, falls nicht vorhanden
 
-# Zielordner für Plots
-plot_path = Path(__file__).parent / "Plots" # Pfad zum Plot-Ordner
-plot_path.mkdir(exist_ok=True) # Ordner erstellen, falls nicht vorhanden
-
-# Plotten des Imaginärteils über der Frequenz für alle Hochhäuser und Knoten
 for haus in hochhaeuser:
-    plt.figure(figsize=(16, 9)) # Neuer Plot für jedes Hochhaus, Hochformat
-    for knoten in knoten_liste: # Schleife über alle Knoten
-        plt.plot(
-            data[haus][knoten]["f"],
-            data[haus][knoten]["Im"],
-            label=knoten
-        ) # Imaginärteil über Frequenz plotten
-
+    plt.figure(figsize=(16,9))
+    for knoten in knoten_liste:
+        plt.plot(data[haus][knoten]["f"], data[haus][knoten]["Im"], label=knoten)
     plt.xlabel("Frequenz [Hz]")
     plt.ylabel("Imaginärteil")
     plt.title(f"Imaginärteil aller Knoten – {haus}")
     plt.legend()
     plt.grid(True)
+    f_min = int(data[haus][knoten_liste[0]]["f"][0])
+    f_max = int(data[haus][knoten_liste[0]]["f"][-1]) + 1
+    plt.xticks(np.arange(f_min, f_max, 1))
+    plt.savefig(plot_path / f"{haus}_Imaginaerteil.png", dpi=100)
+    plt.close()
 
-    # x-Ticks: von Minimum bis Maximum mit Schritt 1 Hz
-    f_min = int(data[haus][knoten_liste[0]]["f"][0]) # knoten_liste[0] = H11, Frequenz, [0] = erster Wert (= 0 Hz)
-    f_max = int(data[haus][knoten_liste[0]]["f"][-1]) + 1 # [-1] = letzter Wert, +1 für inklusives Maximum
-    plt.xticks(np.arange(f_min, f_max, 1)) # x-Ticks mit 1 Hz Abstand setzen
-
-    full_path = plot_path / f"{haus}_Imaginaerteil.png" # Pfad zum Speichern des Plots
-    plt.savefig(full_path, dpi=100) # Plot speichern mit hoher Auflösung (dpi=100)
-    # plt.show() # Plot anzeigen
-    plt.close() # Plot schließen
-
-# -----------------------------
-# 2b. ZEITBEREICHSSIGNALE PLOTTEN
-# -----------------------------
-
-hochhaeuser_time = ["Hochhaus 2"] # Zeitdaten nur für Hochhaus 2 vorhanden
+# =============================
+# 4. EIGENFREQUENZEN BESTIMMEN
+# =============================
 referenz_knoten = "E1"
-t_zoom_min = 0.37  # untere Grenze des Zooms in Sekunden
-t_zoom_max = 0.6  # obere Grenze des Zooms in Sekunden
 
-for haus in hochhaeuser_time:
-
-    acc_file = base_path / haus / f"{referenz_knoten}_beschleunigung.txt"
-    force_file = base_path / haus / f"{referenz_knoten}_kraft.txt"
-
-    # Zeitbereichsdaten einlesen
-    t_acc, acc = read_time_signal(acc_file)
-    t_force, force = read_time_signal(force_file)
-
-    # =============================
-    # Plot 1: Gesamte Zeitverläufe
-    # =============================
-    fig, axs = plt.subplots(2, 1, figsize=(16, 9), sharex=True)
-
-    # Kraft
-    axs[0].plot(t_force, force)
-    axs[0].set_ylabel("Kraft [N]")
-    axs[0].set_title(f"Zeitbereichssignale – {haus} ({referenz_knoten})")
-    axs[0].grid(True)
-
-    # Beschleunigung
-    axs[1].plot(t_acc, acc)
-    axs[1].set_xlabel("Zeit [s]")
-    axs[1].set_ylabel("Beschleunigung [m/s²]")
-    axs[1].grid(True)
-
-    full_path = plot_path / f"{haus}_{referenz_knoten}_Zeitbereich_gesamt.png"
-    plt.savefig(full_path, dpi=200)
-    #plt.show()
-    plt.close()
-
-    # =============================
-    # Plot 2: Gezoomter Zeitbereich
-    # =============================
-    mask_acc = (t_acc >= t_zoom_min) & (t_acc <= t_zoom_max)
-    mask_force = (t_force >= t_zoom_min) & (t_force <= t_zoom_max)
-
-    fig, axs = plt.subplots(2, 1, figsize=(16, 9), sharex=True)
-
-    # Kraft (Zoom)
-    axs[0].plot(t_force[mask_force], force[mask_force])
-    axs[0].set_ylabel("Kraft [N]")
-    axs[0].set_title(f"Zeitbereichssignale ({t_zoom_min}s–{t_zoom_max}s) – {haus} ({referenz_knoten})")
-    axs[0].grid(True)
-
-    # Beschleunigung (Zoom)
-    axs[1].plot(t_acc[mask_acc], acc[mask_acc])
-    axs[1].set_xlabel("Zeit [s]")
-    axs[1].set_ylabel("Beschleunigung [m/s²]")
-    axs[1].grid(True)
-
-    full_path = plot_path / f"{haus}_{referenz_knoten}_Zeitbereich_Zoom.png"
-    plt.savefig(full_path, dpi=200)
-    #plt.show()
-    plt.close()
-
-# -----------------------------
-# 3. EIGENFREQUENZEN BESTIMMEN UND AUSGEBEN
-# -----------------------------
-
-referenz_knoten = "E1" # Referenzknoten für Peaks
-
-print("=== Gefundene Eigenfrequenzen für alle Hochhäuser ===\n")
-
-for haus in hochhaeuser: # Schleife über alle Hochhäuser
-    f_ref = data[haus][referenz_knoten]["f"] # Frequenzen des Referenzknotens
-    im_ref = np.abs(data[haus][referenz_knoten]["Im"]) # Imaginärteil des Referenzknotens
+print("=== Gefundene Eigenfrequenzen ===\n")
+for haus in hochhaeuser:
+    f_ref = data[haus][referenz_knoten]["f"]
+    im_ref = np.abs(data[haus][referenz_knoten]["Im"])
 
     # Peaks finden
-    # Relativer Threshold bezogen auf das Maximum
-    rel_height = 0.25          # 25% des Maximums
-    height_thr = rel_height * np.max(im_ref) # absoluter Threshold berechnen
-
-    # Mindestabstand zwischen Peaks
-    min_distance_hz = 1.5      # physikalisch sinnvoll
-    min_distance_pts = int(min_distance_hz / delta_f) # in Messpunkten umrechnen
-
-    peaks, props = find_peaks(
-        im_ref,
-        height=height_thr, # minimaler Peak-Höhe
-        distance=min_distance_pts # Mindestabstand zwischen Peaks
-    ) # Peaks finden
-
-    eigenfrequenzen = f_ref[peaks] # Eigenfrequenzen aus Peaks extrahieren
+    height_thr = 0.25 * np.max(im_ref)        # 25% des Maximums als Threshold
+    min_distance_pts = int(1.5 / delta_f)     # Mindestabstand zwischen Peaks
+    peaks, _ = find_peaks(im_ref, height=height_thr, distance=min_distance_pts)
+    eigenfrequenzen = f_ref[peaks]
 
     # Ausgabe
-    print(f"{haus}:") # Name des Hochhauses
-    if len(eigenfrequenzen) == 0: # keine Peaks gefunden
+    print(f"{haus}:")
+    if len(eigenfrequenzen) == 0:
         print("  Keine Peaks über Threshold gefunden")
     else:
-        for i, freq in enumerate(eigenfrequenzen): # Schleife über gefundene Eigenfrequenzen
-            print(f"  Mode {i+1}: {freq:.3f} Hz") # Ausgabe der Eigenfrequenz mit 3 Nachkommastellen
+        for i, freq in enumerate(eigenfrequenzen):
+            print(f"  Mode {i+1}: {freq:.3f} Hz")
     print()
 
-# -----------------------------
-# 4. MODEFORMEN BERECHNEN UND DARSTELLEN
-# -----------------------------
-
-# Manuelle Frequenzfenster für die Moden
+# =============================
+# 5. 2D-PLOT: Modeformen
+# =============================
 mode_windows_all = {
-    "Hochhaus 1": [(2, 4), (8, 10), (15,17), (30, 36)],
-    "Hochhaus 2": [(2, 4), (8, 10), (15,17), (30, 36)],
-    "Hochhaus 3": [(2, 4), (8, 10), (15,17), (30, 36)]
-} # Frequenzfenster für jede Mode und jedes Hochhaus [(f_min, f_max)] in Hz
+    "Hochhaus 1": [(2,4),(8,10),(15,17),(30,36)],
+    "Hochhaus 2": [(2,4),(8,10),(15,17),(30,36)],
+    "Hochhaus 3": [(2,4),(8,10),(15,17),(30,36)]
+}
 
-for haus in hochhaeuser:  # Schleife über alle Hochhäuser
-
-    # Modeformen und deren Eigenfrequenzen mit eigener Funktion bestimmen
+for haus in hochhaeuser:
+    # Modeformen berechnen
     mode_freqs, mode_shapes = compute_mode_shapes(
-        data,
-        haus,
-        knoten_liste,
-        mode_windows_all[haus],
-        referenz_knoten,
-        delta_f
+        data, haus, knoten_liste, mode_windows_all[haus], referenz_knoten, delta_f
     )
 
-    plt.figure(figsize=(7,8))  # Hochformat für Hochhaus
+    plt.figure(figsize=(7,8))
+    y_positions = np.arange(len(knoten_liste) + 1)  # Fundament + Knoten
 
-    # y-Positionen für Fundament + Knoten
-    # Fundament = 0, H13 = 1, H12 = 2, H11 = 3
-    y_positions = np.arange(len(knoten_liste) + 1)
+    # Ursprungsform: gerade Linie (Fundament = 0)
+    plt.plot(np.zeros(len(y_positions)), y_positions, color='red', linewidth=2, label='Ursprüngliche Form')
 
-    # Ursprungsform als gerade Linie plotten
-    plt.plot(
-        np.zeros(len(y_positions)),
-        y_positions,
-        color='red',
-        linestyle='-',
-        linewidth=2,
-        label='Ursprüngliche Form'
-    )
+    for i, f_mode in enumerate(mode_freqs):
+        if f_mode is None or np.isnan(f_mode):
+            continue
+        mode_shape = mode_shapes[i]
+        mode_shape_with_fundament = np.append(0, mode_shape[::-1])  # Fundament hinzufügen
+        plt.plot(mode_shape_with_fundament, y_positions, marker='o', linewidth=2,
+                 label=f"Mode {i+1} ({f_mode:.2f} Hz)")
 
-    for i, f_mode in enumerate(mode_freqs): # Schleife über alle Moden
-        if f_mode is None or np.isnan(f_mode): # Überspringen, falls keine Frequenz gefunden
-         continue
-
-        mode_shape = mode_shapes[i]  # Modeform (Reihenfolge: H11, H12, H13)
-
-        # Fundament hinzufügen und Reihenfolge für Plot umdrehen (mit [::-1])
-        mode_shape_with_fundament = np.append(0, mode_shape[::-1])
-        # [Fundament, H13, H12, H11] 
-
-        plt.plot(
-            mode_shape_with_fundament,
-            y_positions,
-            marker="o",
-            linewidth=2,
-            label=f"Mode {i+1} ({f_mode:.2f} Hz)"
-        )
-
-    # y-Achse: Fundament unten, H13, H12, H11 oben
+    # y-Achsen Labels
     y_labels = ["Fundament"] + knoten_liste[::-1]
-    plt.yticks(y_positions, y_labels) # y-Ticks und Labels setzen
-
+    plt.yticks(y_positions, y_labels)
     plt.xlabel("Auslenkung")
     plt.ylabel("Knoten")
     plt.title(f"Modeformen – {haus}")
     plt.legend()
     plt.grid(True)
-
-    full_path = plot_path / f"{haus}_Modeformen.png"
-    plt.savefig(full_path, dpi=300) # Plot speichern mit hoher Auflösung (dpi=300)
-    #plt.show() # Plot anzeigen
-    plt.close() # Plot schließen
+    plt.savefig(plot_path / f"{haus}_Modeformen.png", dpi=300)
+    plt.close()
 
 # -----------------------------
 # 5. 3D AUSLENKUNG ALLER MODEN FÜR JEDES HOCHHAUS DARSTELLEN
-# (MIT PYVISTA)
 # Hochrichtung = y, Breite = x, Auslenkung = z
 # -----------------------------
 
-stl_file = base_path / "Hochhaus.stl"  # STL-Datei (gemeinsames Mesh für alle Hochhäuser)
-mesh_orig = pv.read(stl_file)           # Original-Mesh laden
+from scipy.interpolate import PchipInterpolator  # Für glatte Interpolation der Modeformen
 
-# Knotenhöhen definieren (y-Werte der Messpunkte/Hochhaus-Ebenen)
-y_min = mesh_orig.points[:,1].min()
-y_max = mesh_orig.points[:,1].max()
-knoten_hoehen = np.array([y_max, (y_min + y_max)/2, y_min])  # von unten Fundament, H13, H12, H11
+# STL-Datei laden (gemeinsames Mesh für alle Hochhäuser)
+stl_file = base_path / "Hochhaus.stl"
+mesh_orig = pv.read(stl_file)
+
+# Knotenhöhen definieren (y-Werte der Ebenen/Hochhaus-Knoten)
+y_min = mesh_orig.points[:, 1].min()
+y_max = mesh_orig.points[:, 1].max()
+knoten_hoehen = np.array([y_max, (y_min + y_max)/2, y_min])  # Fundament unten, H13, H12, H11
+
+# Anzahl der Unterteilungen für feineres Mesh
+subdivide_n = 2  # 0=Original, 1=1 Unterteilung, 2=2 Unterteilungen usw.
 
 print("=== Warpingfaktoren für die 3D-Darstellung der Modeformen ===\n")
 
-for haus in hochhaeuser: # Schleife über alle Hochhäuser
+for haus in hochhaeuser:
 
-    # Modeformen und deren Eigenfrequenzen bestimmen wieder mit der eigenen Funktion
+    # Modeformen und Eigenfrequenzen bestimmen
     mode_freqs, mode_shapes = compute_mode_shapes(
         data,
         haus,
@@ -303,35 +182,52 @@ for haus in hochhaeuser: # Schleife über alle Hochhäuser
         delta_f
     )
 
-    for mode_idx, mode_shape in enumerate(mode_shapes): # Schleife über alle Moden
+    for mode_idx, mode_shape in enumerate(mode_shapes):
 
+        # Kopie des Original-Meshes
         mesh = mesh_orig.copy()
+
+        # Mesh fein unterteilen
+        if subdivide_n > 0:
+            mesh = mesh.subdivide(subdivide_n, "linear")
+
+        # -----------------------------
+        # Displacement berechnen
+        # -----------------------------
         displacement = np.zeros_like(mesh.points)
+        spline = PchipInterpolator(knoten_hoehen[::-1], mode_shape[::-1])
+        displacement[:, 2] = spline(mesh.points[:, 1])
+        mesh["U"] = displacement  # "U" = Standardattribut für Verschiebungen in PyVista
+
+        # Skalierungsfaktor berechnen
+        max_auslenkung = np.max(np.abs(mode_shape))
+        hoehe_hh = y_max - y_min
+        factor = hoehe_hh / max_auslenkung * 0.1
+        print(f"{haus} – Mode {mode_idx+1}: Warping-Faktor = {factor:.2f}")
+
+        # Mesh nach Auslenkung warpen
+        warped_mesh = mesh.warp_by_vector("U", factor=factor)
 
         # -----------------------------
-        # Glatte Interpolation zwischen den Knotenebenen
+        # Interaktiver Plot (wird angezeigt)
         # -----------------------------
-        # PCHIP interpoliert die z-Auslenkung zwischen den y-Knoten
-        spline = PchipInterpolator(knoten_hoehen[::-1], mode_shape[::-1])  # [::-1] = umdrehen weil Fundament unten
-
-        # Für alle Meshpunkte die z-Auslenkung berechnen
-        displacement[:,2] = spline(mesh.points[:,1]) # y-Koordinate des Meshs als Eingabe für die Interpolation
-
-        # Punktattribut für Warping hinzufügen
-        mesh["U"] = displacement # "U" ist das Standardattribut für Verschiebungen in PyVista
-
-        # Automatische Skalierung
-        max_auslenkung = np.max(np.abs(mode_shape)) # maximale Auslenkung der Modeform
-        hoehe_hh = y_max - y_min # Höhe des Hochhauses
-        factor = hoehe_hh / max_auslenkung * 0.1 # Skalierungsfaktor (10% der Gebäudehöhe)
-        print(f"{haus} – Mode {mode_idx+1}: Warping-Faktor = {factor:.2f}") # Ausgabe des Warping-Faktors
-
-        warped_mesh = mesh.warp_by_vector("U", factor=factor) # Mesh verformen
-
-        # Plot
         plotter = pv.Plotter()
         plotter.add_mesh(warped_mesh, color="lightblue", show_edges=True, opacity=1.0)
         plotter.add_axes()
         plotter.show_grid()
         plotter.view_vector(vector=(-1, 0, 0), viewup=(0, 1, 0))
         plotter.show(title=f"{haus} – 3D Auslenkung Mode {mode_idx+1}")
+
+        # -----------------------------
+        # Off-screen Plot für Screenshot
+        # -----------------------------
+        plotter_off = pv.Plotter(off_screen=True)
+        plotter_off.add_mesh(warped_mesh, color="lightblue", show_edges=True, opacity=1.0)
+        plotter_off.add_axes()
+        plotter_off.show_grid()
+        plotter_off.view_vector(vector=(-1, 0, 0), viewup=(0, 1, 0))
+
+        # Screenshot speichern
+        full_path = plot_path / f"{haus}_Mode{mode_idx+1}_3D_Auslenkung.png"
+        plotter_off.screenshot(full_path, window_size=(1600, 900))
+        plotter_off.close()
