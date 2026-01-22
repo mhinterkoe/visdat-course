@@ -11,12 +11,12 @@ INTERAKTIV_3D = False  # True = interaktive 3D-Plots anzeigen, False = nur Scree
 # =====================================================
 # 1. HILFSFUNKTIONEN IMPORTIEREN
 # =====================================================
-from read_time_signal import read_time_signal       # Zeitbereichsdaten einlesen
-from read_frf_file import read_frf_file             # FRF-Dateien einlesen
-from plot_frf_im import plot_frf_im                 # FRF Imaginärteil Plots
-from compute_mode_shapes import compute_mode_shapes # Modeformen-Berechnung
-from plot_modeformen_2d import plot_modeformen_2d   # 2D Modeformen Plots
-from plot_modeformen_3d import plot_modeformen_3d   # 3D Modeformen Plots
+from src.read_time_signal import read_time_signal       # Zeitbereichsdaten einlesen
+from src.read_frf_file import read_frf_file             # FRF-Dateien einlesen
+from src.plot_frf_im import plot_frf_im                 # FRF Imaginärteil Plots
+from src.compute_mode_shapes import compute_mode_shapes # Modeformen-Berechnung
+from src.plot_modeformen_2d import plot_modeformen_2d   # 2D Modeformen Plots
+from src.plot_modeformen_3d import plot_modeformen_3d   # 3D Modeformen Plots
 
 # =====================================================
 # 2. HAUPTPROGRAMM
@@ -24,8 +24,8 @@ from plot_modeformen_3d import plot_modeformen_3d   # 3D Modeformen Plots
 if __name__ == "__main__":
 
     base_path = Path(__file__).parent / "data"  # Basisverzeichnis für Messdaten
-    plot_path = Path(__file__).parent / "Plots"  # Hauptordner für Plots
-    plot_path.mkdir(exist_ok=True)               # Falls Ordner fehlt, anlegen
+    plot_path = Path(__file__).parent.parent / "assets/screenshots"
+    plot_path.mkdir(parents=True, exist_ok=True)
 
     hochhaeuser = ["Hochhaus 1", "Hochhaus 2", "Hochhaus 3"]
     knoten_liste = ["E1", "E2", "E3"]
