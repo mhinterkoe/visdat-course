@@ -106,3 +106,35 @@ Screenshots zeigen typische Auslenkungen für die Moden eines Hochhauses
 - Automatische Normalisierung oder Vergleich zwischen Hochhäusern
 - Integration von Echtzeit-Messdaten
 - Erweiterte Visualisierungen (Animation der Modeformen über Zeit)
+
+## Test auf Clean Environment
+
+Vor der Abgabe sicherstellen, dass der Code auch in einer frischen Umgebung läuft.
+
+### Schritt-für-Schritt in PowerShell
+
+```powershell
+# 1️⃣ Temporär Python zum PATH hinzufügen
+$env:Path += ";C:\Users\hinte\AppData\Local\Programs\Python\Python313\"
+
+# Überprüfen, ob Python gefunden wird
+python --version
+
+# 2️⃣ In Projektordner wechseln
+cd C:\visdat-course\final-assignment\markus-hinterkoerner\code
+
+# 3️⃣ Virtuelles Environment erstellen
+python -m venv test_env
+
+# 4️⃣ Virtual Environment aktivieren
+.\test_env\Scripts\Activate.ps1
+
+# 5️⃣ Pip aktualisieren und Abhängigkeiten installieren
+pip install --upgrade pip
+pip install -r requirements.txt
+
+# 6️⃣ Code testen
+python main.py
+
+# 7️⃣ Optional: Virtual Environment verlassen
+deactivate

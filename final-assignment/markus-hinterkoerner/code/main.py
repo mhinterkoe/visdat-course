@@ -6,7 +6,7 @@ from scipy.signal import find_peaks  # Für Peak-Erkennung
 # =====================================================
 # 0. EINSTELLUNGEN
 # =====================================================
-INTERAKTIV_3D = False  # True = interaktive 3D-Plots anzeigen, False = nur Screenshots speichern
+INTERAKTIV_3D = True  # True = interaktive 3D-Plots anzeigen, False = nur Screenshots speichern
 
 # =====================================================
 # 1. HILFSFUNKTIONEN IMPORTIEREN
@@ -27,7 +27,7 @@ if __name__ == "__main__":
     plot_path = Path(__file__).parent.parent / "assets/screenshots"
     plot_path.mkdir(parents=True, exist_ok=True)
 
-    hochhaeuser = ["Hochhaus 1", "Hochhaus 2", "Hochhaus 3"]
+    hochhaeuser = ["Hochhaus_1", "Hochhaus_2", "Hochhaus_3"]
     knoten_liste = ["E1", "E2", "E3"]
     T = 10
     delta_f = 1 / T  # Frequenzauflösung
@@ -108,9 +108,9 @@ if __name__ == "__main__":
     # Modeformen 2D Plot
     # -------------------------------------------------
     mode_windows_all = {
-        "Hochhaus 1": [(2,4),(8,10),(15,17),(30,36)],
-        "Hochhaus 2": [(2,4),(8,10),(15,17),(30,36)],
-        "Hochhaus 3": [(2,4),(8,10),(15,17),(30,36)]
+        "Hochhaus_1": [(2,4),(8,10),(15,17),(30,36)],
+        "Hochhaus_2": [(2,4),(8,10),(15,17),(30,36)],
+        "Hochhaus_3": [(2,4),(8,10),(15,17),(30,36)]
     } # Frequenzfenster für Moden
 
     for haus in hochhaeuser:
