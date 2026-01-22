@@ -1,4 +1,3 @@
-import sys # Für Systempfade
 from pathlib import Path # Für Pfadoperationen
 import pandas as pd # Für Datenmanipulation
 import numpy as np # Für numerische Operationen
@@ -39,7 +38,7 @@ def read_time_signal(filepath):
 # 1. DATEN EINLESEN
 # -----------------------------
 
-base_path = Path(r"final-assignment\markus-hinterkoerner\code\data") # Pfad zu den Daten (r für raw string wegen Backslashes)
+base_path = Path(__file__).parent / "data" # Pfad zum Daten-Ordner
 hochhaeuser = ["Hochhaus 1", "Hochhaus 2", "Hochhaus 3"] # Liste der Hochhäuser
 knoten_liste = ["E1", "E2", "E3"] # Liste der Knoten je Hochhaus
 
