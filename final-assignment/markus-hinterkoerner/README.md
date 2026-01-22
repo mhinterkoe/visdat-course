@@ -1,0 +1,108 @@
+# Hochhaus-Modeformen Visualisierung
+
+## Projektbeschreibung
+Dieses Projekt analysiert und visualisiert Schwingungen von Hochhäusern anhand von FRF-Daten (Frequency Response Functions).  
+Es ermöglicht die Berechnung von Eigenfrequenzen und Modeformen, sowie deren Darstellung in 2D- und 3D-Plots.  
+Ziel ist es, ein besseres Verständnis der Schwingungsverhalten von Hochhäusern zu erhalten, z. B. bei Erdbeben oder Windlasten.
+
+---
+
+## Features
+- Einlesen von Zeitbereichs- und FRF-Daten aus Textdateien
+- Berechnung von Eigenfrequenzen und Modeformen
+- 2D-Visualisierung der Modeformen mit Fundament und Knoten
+- 3D-Visualisierung der Modeformen auf STL-Gebäudemodellen
+- Flexibler Modus: interaktive 3D-Ansicht oder Screenshots
+- Automatische Erstellung von Ordnern für Hochhäuser und Plots
+
+---
+
+## Technologien
+- Python 3.13
+- Numerik & Signalverarbeitung: `numpy`, `scipy`
+- Datenhandling: `pandas`
+- 2D-Plotting: `matplotlib`
+- 3D-Visualisierung: `pyvista` (optional `pyvistaqt` für interaktive Plots)
+- STL-Dateien für 3D-Mesh
+
+---
+
+## Installation und Setup
+```bash
+cd final-assignment/markus-hinterkoerner/code
+pip install -r requirements.txt
+```
+---
+
+## Usage
+```python
+main.py
+```
+
+---
+
+## Data
+
+### Eingabedaten
+- FRF-Dateien: Tab-getrennte Textdateien mit Dezimalzeichen `,`
+- `<Knoten>_Re.txt` – Realteil der FRF
+- `<Knoten>_Im.txt` – Imaginärteil der FRF
+- Zeitbereichsdaten: Zwei Spalten: Zeit [s], Amplitude
+- 3D-Modell: STL-Datei des Hochhauses: `Hochhaus.stl`
+
+### Ordnerstruktur der Daten
+
+```text
+code/data/
+├── Hochhaus 1/
+│   ├── E1_Im.txt
+│   ├── E1_Re.txt
+│   └── ...
+├── Hochhaus 2/
+├── Hochhaus 3/
+└── Hochhaus.stl
+```
+
+---
+
+### Format / Struktur
+- FRF-Dateien: 2 Spalten (Frequenz, Wert)
+- Zeitbereichsdaten: 2 Spalten (Zeit, Amplitude)
+- STL-Datei: Standard 3D-Mesh
+
+---
+
+## Implementation Details
+
+### Algorithmen und Ansätze
+- Eigenfrequenzen: Peaks des Imaginärteils der FRFs werden innerhalb definierter Frequenzfenster gefunden.
+- Modeformen: Werte an den Frequenzen der Peaks werden für alle Knoten gesammelt und interpoliert.
+- 2D-Plot: Fundament als Linie bei Null, Knoten vertikal angeordnet, Modeformen überlagert.
+- 3D-Plot: STL-Mesh wird gemäß Modeform verformt (Warping), glatte Interpolation via PchipInterpolator.
+
+### Herausforderungen
+- Synchronisation von Daten aus mehreren Knoten und Hochhäusern
+- Interpolation der Modeformen auf 3D-Meshes
+- Flexible Plotstruktur: interaktiv oder Screenshots, Unterordner pro Hochhaus
+
+### Performance
+- Verarbeitung erfolgt sequentiell; Datenmengen moderat, daher keine Parallelisierung notwendig
+- PyVista Offscreen Rendering für Screenshots verhindert Blockierung der Hauptausführung
+
+---
+
+## Screenshots
+Beispiele aus der Anwendung (gespeichert in `assets/screenshots/`):
+- 2D Modeformen
+- 3D Modeformen
+
+Screenshots zeigen typische Auslenkungen für die Moden eines Hochhauses
+
+---
+
+## Future Improvements
+- GUI zur interaktiven Auswahl von Hochhäusern, Moden oder Frequenzfenstern
+- Erweiterung auf beliebig viele Knoten
+- Automatische Normalisierung oder Vergleich zwischen Hochhäusern
+- Integration von Echtzeit-Messdaten
+- Erweiterte Visualisierungen (Animation der Modeformen über Zeit)
