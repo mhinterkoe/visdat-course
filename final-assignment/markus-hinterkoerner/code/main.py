@@ -50,15 +50,15 @@ if __name__ == "__main__":
 
             # Pfade zu den FRF-Dateien
             im_file = base_path / haus / f"{knoten}_Im.txt"
-            re_file = base_path / haus / f"{knoten}_Re.txt"
+            # re_file = base_path / haus / f"{knoten}_Re.txt"
 
             # Prüfen, ob Dateien existieren
-            if not im_file.exists() or not re_file.exists():
+            if not im_file.exists():
                 raise FileNotFoundError(f"FRF-Dateien fehlen für {haus}, {knoten}")
 
             # FRF-Dateien einlesen
             df_im = read_frf_file(im_file)
-            df_re = read_frf_file(re_file)
+            # df_re = read_frf_file(re_file)
 
             # Frequenzachse erzeugen
             N = len(df_im)
@@ -67,8 +67,7 @@ if __name__ == "__main__":
             # Daten strukturiert speichern
             data[haus][knoten] = {
                 "f": f_phys,
-                "Im": df_im["val"].values,
-                "Re": df_re["val"].values
+                "Im": df_im["val"].values
             }
 
     # -------------------------------------------------

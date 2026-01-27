@@ -1,7 +1,7 @@
 # Hochhaus-Modeformen Visualisierung
 
 ## Projektbeschreibung
-Dieses Projekt analysiert und visualisiert Schwingungen von Hochhäusern anhand von FRF-Daten (Frequency Response Functions).  
+Dieses Projekt analysiert und visualisiert Schwingungen von Hochhäusern anhand von FRF-Daten (Frequency Response Functions/Übetragungsfunktionen).  
 Es ermöglicht die Berechnung von Eigenfrequenzen und Modeformen, sowie deren Darstellung in 2D- und 3D-Plots.  
 Ziel ist es, ein besseres Verständnis der Schwingungsverhalten von Hochhäusern zu erhalten, z. B. bei Erdbeben oder Windlasten.
 
@@ -10,8 +10,8 @@ Ziel ist es, ein besseres Verständnis der Schwingungsverhalten von Hochhäusern
 ## Features
 - Einlesen von Zeitbereichs- und FRF-Daten aus Textdateien
 - Berechnung von Eigenfrequenzen und Modeformen
-- 2D-Visualisierung der Modeformen mit Fundament und Knoten
-- 3D-Visualisierung der Modeformen auf STL-Gebäudemodellen
+- 2D-Visualisierung der Modeformen mit Fundament und Knotenauslenkungen
+- 3D-Visualisierung der Modeformen auf STL-Gebäudemodell
 - Flexibler Modus: interaktive 3D-Ansicht oder Screenshots
 - Automatische Erstellung von Ordnern für Hochhäuser und Plots
 
@@ -23,7 +23,7 @@ Ziel ist es, ein besseres Verständnis der Schwingungsverhalten von Hochhäusern
 - Datenhandling: `pandas`
 - 2D-Plotting: `matplotlib`
 - 3D-Visualisierung: `pyvista` (optional `pyvistaqt` für interaktive Plots)
-- STL-Dateien für 3D-Mesh
+- STL-Dateien für 3D-Mesh (Solidworks)
 
 ---
 
@@ -50,6 +50,25 @@ main.py
 - Zeitbereichsdaten: Zwei Spalten: Zeit [s], Amplitude
 - 3D-Modell: STL-Datei des Hochhauses: `Hochhaus.stl`
 
+### Hinweis zu Zeitbereichs- und Realteildaten
+
+Im Rahmen einer Laborübung (Prüfstandstechnik) wurden zusätzlich Zeitbereichsdaten 
+(Beschleunigungs- und Kraftsignale) sowie der Realteil der FRFs verwendet 
+und geplottet.
+
+Für das vorliegende Final Assignment wurden diese Funktionalitäten bewusst 
+nicht mehr in die Auswertung integriert, da:
+
+- die Modenanalyse und Peak-Erkennung ausschließlich auf dem Imaginärteil der FRFs basiert,
+- der Realteil der FRF für die hier betrachteten Fragestellungen keinen zusätzlichen Mehrwert liefert,
+- Zeitbereichsplots für dieses Projekt nicht erforderlich sind und den Fokus von der
+  frequenzbasierten Analyse ablenken würden.
+
+Der Code ist jedoch modular aufgebaut, sodass eine erneute Integration von
+Zeitbereichsdaten oder des Realteils der FRFs ohne strukturelle Änderungen möglich wäre.
+
+---
+
 ### Ordnerstruktur der Daten
 
 ```text
@@ -59,7 +78,14 @@ code/data/
 │   ├── E1_Re.txt
 │   └── ...
 ├── Hochhaus 2/
+├── E1_Im.txt
+│   ├── E1_beschleunigung.txt
+│   ├── E1_Im.txt
+│   ├── E1_kraft.txt
+│   ├── E1_Re.txt
+│   └── ...
 ├── Hochhaus 3/
+├── Hochhaus.SLDPRT
 └── Hochhaus.stl
 ```
 
@@ -79,6 +105,8 @@ code/data/
 - Modeformen: Werte an den Frequenzen der Peaks werden für alle Knoten gesammelt und interpoliert.
 - 2D-Plot: Fundament als Linie bei Null, Knoten vertikal angeordnet, Modeformen überlagert.
 - 3D-Plot: STL-Mesh wird gemäß Modeform verformt (Warping), glatte Interpolation via PchipInterpolator.
+- Die bewusste Beschränkung auf den Imaginärteil der FRFs ermöglicht eine robuste 
+und übersichtliche Modenanalyse mit klar identifizierbaren Eigenfrequenzen.
 
 ### Herausforderungen
 - Synchronisation von Daten aus mehreren Knoten und Hochhäusern
@@ -108,10 +136,6 @@ Screenshots zeigen typische Auslenkungen für die Moden eines Hochhauses
 - Erweiterte Visualisierungen (Animation der Modeformen über Zeit)
 
 ## Test auf Clean Environment
-
-Vor der Abgabe sicherstellen, dass der Code auch in einer frischen Umgebung läuft.
-
-### Schritt-für-Schritt in PowerShell
 
 ```powershell
 # 1️⃣ Temporär Python zum PATH hinzufügen

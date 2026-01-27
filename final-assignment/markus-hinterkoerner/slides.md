@@ -53,7 +53,7 @@ img {
 
 ---
 
-## Screenshots 3D Modeformen Hochhaus 1
+## Screenshots 3D Modeform von Mode 1 und Hochhaus 1
 
 <div style="display:flex; justify-content:space-around; align-items:center;">
   <img src="assets/screenshots/Hochhaus_1/Hochhaus_1_Mode1_3d.png">
@@ -89,6 +89,9 @@ img {
 - Synchronisation der FRF-Daten über mehrere Knoten und Hochhäuser gelöst durch strukturierte Dictionaries.
 - Interpolation auf 3D-Meshes gelöst mit `PchipInterpolator`.
 - Flexible Plotstruktur für interaktive und statische Visualisierung umgesetzt.
+- Abweichungen zwischen 2D- und 3D-Darstellung höherer Moden:
+  Glättende Interpolation auf dem 3D-Mesh führt zu kurvenförmigen Modeformen,
+  während die 2D-Darstellung diskrete Knoten („Zick-Zack“) zeigt.
 
 ---
 
